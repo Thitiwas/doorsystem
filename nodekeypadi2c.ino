@@ -116,42 +116,56 @@ void loop() {
           Serial.println(key);
           Serial.println(tempPassword);
         }
-        else if (key == 'A'){  //Check for password
-//          String PostData = {\"typeItem\": \ + typeItem + "\", \"nameTypeItem\": + nameTypeItem + "\", \"password\": \ + tempPassword + "\"};
-/*          StaticJsonBuffer<300> jsonBuffer;
+        else if (key == 'A'){
+          if (tempPassword != "") {
+            String data;
+            String res = "";
+            StaticJsonBuffer<300> jsonBuffer;
             JsonObject& PostData = jsonBuffer.createObject();
             PostData["typeItem"] = typeItem;
             PostData["nameTypeItem"] = nameTypeItem;
             PostData["password"] = tempPassword;
-            PostData.prettyPrintTo(Serial); */
-              const char request[] =
-                "GET / HTTP/1.1\r\n"
-                "User-Agent: ESP8266/01\r\n"
-                "Accept: */*\r\n"
-                "Connection: close\r\n"
-                "\r\n";
-              Serial.println(request);
-              client.connect(server, 5000);
-              client.print(request);
-              client.flush();
-              delay(1000);
-              String res = "";
-              unsigned long timeout = millis();
-              while (client.connected()) {
-                if(client.available()){
-                  res = client.readStringUntil('\n');
-                  delay(1);
-                }
+            PostData.printTo(data);  
+            
+            Serial.println(data);
+            client.connect(server, 5000);
+            client.println("POST /checkRoomPassword HTTP/1.1");
+            client.println("Host: fitmcoworkingspace.me");
+            client.println("Content-Type: application/json");
+            client.println("Connection: close");
+            client.print("Content-Length: ");
+            client.println(data.length());
+            client.println();
+            client.print(data);
+            client.println();           
+            delay(500);
+            long interval = 2000;
+            unsigned long currentMillis = millis(), previousMillis = millis();
+            while(!client.available()){           
+              if( (currentMillis - previousMillis) > interval ){            
+                Serial.println("Timeout");
+                client.stop();     
+                return;
               }
-              client.stop();
-          Serial.println(res);
-          Serial.println("closing connection");
-        }
-     }
+              currentMillis = millis();
+            }
+            while (client.connected()) {
+              if(client.available()){
+                res = client.readStringUntil('\n');
+                  delay(1);
+               }
+            }
+            client.stop();
+            Serial.println(res);
+            Serial.println("closing connection");
+            }
+         }
      else if (key == 'C'){  //Check for password
       tempPassword = "";
       Serial.println( tempPassword + "ok");
     }
+  }
   delay(50);
 }
+
 //////////////////////////////////////////////////////////////////
