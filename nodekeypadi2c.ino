@@ -86,7 +86,8 @@ char getKey() { // blocking function call
 
 void setup() {
   Serial.begin( 115200 );
-
+  pinMode(D7, OUTPUT);
+  digitalWrite(D7, LOW);
   Serial.print("Connecting to "+*MY_SSID);
   WiFi.begin(MY_SSID, MY_PWD);
   Serial.println("going into wl connect");
@@ -158,14 +159,20 @@ void loop() {
             client.stop();
             Serial.println(res);
             Serial.println("closing connection");
+            if(res == "accept"){
+                Serial.println("delay");
+                digitalWrite(D7, HIGH);
+                delay(5000);
+                digitalWrite(D7, LOW);
+                tempPassword = "";
+              }
             }
          }
      else if (key == 'C'){  //Check for password
       tempPassword = "";
-      Serial.println( tempPassword + "ok");
+      Serial.println( "clear");
     }
   }
-  delay(50);
 }
 
 //////////////////////////////////////////////////////////////////
