@@ -1,6 +1,7 @@
 #include <ESP8266WiFi.h>
 #include <Wire.h> // Use the Wire library
 #include <ArduinoJson.h>
+#include <LiquidCrystal_I2C.h>
 
 #define I2C_SCL_PIN      (5)      // D1 pin (SCL / GPIO-5)
 #define I2C_SDA_PIN      (4)      // D2 pin (SDA / GPIO-4)
@@ -8,7 +9,7 @@
 
 const uint8_t I2C_ADDR = 0x20;    // <--- set the I2C address of the PCF8574(A) chip 
 char sbuf[64];
-
+LiquidCrystal_I2C lcd(0x3F, 20, 4);
 const char* MY_SSID = "Bigcamp-Fttx";
 const char* MY_PWD =  "bc654321";
 const char* server = "fitmcoworkingspace.me";
@@ -104,6 +105,27 @@ void setup() {
   Wire.begin( I2C_SDA_PIN, I2C_SCL_PIN ); 
   Wire.setClock( 100000 ); // set clock speed
   i2c_scan(); // scan I2C devices
+    // initialize the LCD
+  lcd.begin();
+
+  // Turn on the blacklight and print a message.
+  lcd.backlight();
+  lcd.home();
+  lcd.setCursor(2,0);
+  lcd.print("Input Password");
+  lcd.setCursor(1,1);
+  lcd.print("Pass : ");
+  lcd.blink();
+}
+
+
+void setupLcd () {
+      lcd.clear();
+      lcd.setCursor(2,0);
+      lcd.print("Input Password");
+      lcd.setCursor(1,1);
+      lcd.print("Pass : ");
+      lcd.blink();
 }
 
 void loop() {
@@ -115,6 +137,7 @@ void loop() {
         key == '8' || key == '9' ){
           tempPassword += key;
           Serial.println(key);
+          lcd.print("*");
           Serial.println(tempPassword);
         }
         else if (key == 'A'){
@@ -160,15 +183,29 @@ void loop() {
             Serial.println(res);
             Serial.println("closing connection");
             if(res == "accept"){
+                lcd.clear();
+                lcd.setCursor(2,2);
+                lcd.print("Door unlocked");
                 Serial.println("delay");
                 digitalWrite(D7, HIGH);
                 delay(5000);
                 digitalWrite(D7, LOW);
                 tempPassword = "";
+                setupLcd();
+              }
+            if(res == "reject"){
+                lcd.clear();
+                lcd.setCursor(2,1);
+                lcd.print("Password is wrong.");
+                lcd.setCursor(3,2);
+                lcd.print("Please try again.");
+                delay(2000);
+                setupLcd();
               }
             }
          }
      else if (key == 'C'){  //Check for password
+      setupLcd();
       tempPassword = "";
       Serial.println( "clear");
     }
