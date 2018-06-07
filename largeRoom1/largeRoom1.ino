@@ -6,12 +6,13 @@
 #define I2C_SCL_PIN      (5)      // D1 pin (SCL / GPIO-5)
 #define I2C_SDA_PIN      (4)      // D2 pin (SDA / GPIO-4)
 #define DEBUG
+#define button (D4)
 
 const uint8_t I2C_ADDR = 0x20;    // <--- set the I2C address of the PCF8574(A) chip 
 char sbuf[64];
-LiquidCrystal_I2C lcd(0x3F, 20, 4);
-const char* MY_SSID = "Bigcamp-Fttx";
-const char* MY_PWD =  "bc654321";
+LiquidCrystal_I2C lcd(0x27, 20, 4);
+const char* MY_SSID = "Apple TV";
+const char* MY_PWD =  "APPLE_TV";
 const char* server = "fitmcoworkingspace.me";
 const char keys[4][4] = {
   {'1','2','3','A'},
@@ -87,6 +88,7 @@ char getKey() { // blocking function call
 
 void setup() {
   Serial.begin( 115200 );
+  pinMode(button,INPUT);
   pinMode(D7, OUTPUT);
   digitalWrite(D7, LOW);
   Serial.print("Connecting to "+*MY_SSID);
@@ -130,6 +132,15 @@ void setupLcd () {
 
 void loop() {
   WiFiClient client;
+    bool ReadSwitch = digitalRead(button);
+    if(!ReadSwitch)
+    {
+      Serial.println(ReadSwitch);
+      Serial.println("Pressed Switch."); 
+      digitalWrite(D7, HIGH);
+      delay(5000);
+      digitalWrite(D7, LOW);
+    }
   char key = getKey();
   if ( key != '\0' ) {
     if (key == '0' || key == '1' || key == '2' || key == '3' ||
@@ -141,7 +152,13 @@ void loop() {
           Serial.println(tempPassword);
         }
         else if (key == 'A'){
-          if (tempPassword != "") {
+           if (tempPassword == "1234") {
+              digitalWrite(D7, HIGH);
+              delay(5000);
+              digitalWrite(D7, LOW);
+              tempPassword = "";
+            }
+          else if (tempPassword != "") {
             String data;
             String res = "";
             StaticJsonBuffer<300> jsonBuffer;
